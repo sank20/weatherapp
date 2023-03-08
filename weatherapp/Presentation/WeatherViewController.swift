@@ -10,8 +10,6 @@ import UIKit
 import MapKit
 import CoreLocation
 
-//TODO: Remove all the print statements
-
 final class WeatherViewController: UIViewController, UISearchBarDelegate {
     
     private var viewModel = WeatherViewModel()

@@ -30,7 +30,7 @@ final class WeatherViewModel {
                 case .success(let weather):
                     self.weatherData = [weather]
                 case .failure(let error):
-                    print(error)
+                    print(error) // Keeping print statement for failure case. Ideally this should be logged in a logger and notified to the concerning code and also in the UI if needed
                 }
                 completion(result)
             }
@@ -45,7 +45,7 @@ final class WeatherViewModel {
                 case .success(let weather):
                     self?.weatherData.append(weather)
                 case .failure(let error):
-                    print(error)
+                    print(error) // Keeping print statement for failure case. Ideally this should be logged in a logger and notified to the concerning code and also in the UI if needed
                 }
                 completion(result)
             }
@@ -59,7 +59,7 @@ final class WeatherViewModel {
                 case .success(let weather):
                     self?.currentLocationWeatherData = [weather]
                 case .failure(let error):
-                    print(error)
+                    print(error) // Keeping print statement for failure case. Ideally this should be logged in a logger and notified to the concerning code and also in the UI if needed
                 }
                 completion(result)
             }

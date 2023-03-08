@@ -40,7 +40,7 @@ extension LocationSearchResultViewController: MKLocalSearchCompleterDelegate {
 
   func completer(_ completer: MKLocalSearchCompleter, didFailWithError error: Error) {
     activityIndicator.stopAnimating()
-    print("Error: ", error.localizedDescription)
+    print("Error: ", error.localizedDescription) // // Keeping print statement for failure case. Ideally this should be logged in a logger and notified to the concerning code and also in the UI if needed
   }
 }
 

@@ -7,14 +7,16 @@
 
 import Foundation
 
-//TODO: refactor
 enum APIError: Error {
     case BadURL
     case NoData
     case DecodingError
+    case UnexpectedError
 }
-
-class NetworkManager {
+/**
+ Generic class to make API calls and get response
+ */
+final class NetworkManager {
     let apiHandler: APIHandling
     let responseHandler: ResponseHandling
     
@@ -51,7 +53,7 @@ protocol APIHandling {
     func fetchData(url: URL, completion: @escaping(Result<Data, APIError>) -> Void)
 }
 
-class APIHandler: APIHandling {
+final class APIHandler: APIHandling {
     func fetchData(url: URL, completion: @escaping(Result<Data, APIError>) -> Void) {
         URLSession.shared.dataTask(with: url) { data, response, error in
             guard let data = data, error == nil else {
@@ -68,7 +70,7 @@ protocol ResponseHandling {
     func fetchModel<T: Decodable>(type: T.Type, data: Data, completion: (Result<T, APIError>) -> Void)
 }
 
-class ResponseHandler: ResponseHandling {
+final class ResponseHandler: ResponseHandling {
     func fetchModel<T: Decodable>(type: T.Type, data: Data, completion: (Result<T, APIError>) -> Void) {
         let weatherResponse = try? JSONDecoder().decode(type.self, from: data)
         if let weatherResponse = weatherResponse {

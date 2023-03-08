@@ -11,19 +11,17 @@ import MapKit
 import CoreLocation
 
 //TODO: Remove all the print statements
-//TODO: Seaprate out uisearchbardelegate to an extension
-//TODO: Code formatting and indentation
-class WeatherViewController: UIViewController, UISearchBarDelegate, CLLocationManagerDelegate {
 
+final class WeatherViewController: UIViewController, UISearchBarDelegate {
+    
     private var viewModel = WeatherViewModel()
-    private var citiesList: [CityItem] = JSONParsing.parseCitiesJSON()
-
+    
     private var locationManager: CLLocationManager = {
         let locationManager = CLLocationManager()
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
         return locationManager
     }()
-
+    
     lazy var searchController: UISearchController = {
         let searchController = UISearchController(searchResultsController: nil)
         return searchController
@@ -32,7 +30,7 @@ class WeatherViewController: UIViewController, UISearchBarDelegate, CLLocationMa
     let citySearchView = UIView()
     
     private let scrollView = UIScrollView()
-
+    
     private lazy var stackView = {
         let stackView = UIStackView()
         stackView.axis = .vertical
@@ -47,7 +45,7 @@ class WeatherViewController: UIViewController, UISearchBarDelegate, CLLocationMa
     override func viewDidLoad() {
         super.viewDidLoad()
         
-//        locationManager.requestWhenInUseAuthorization()
+        //        locationManager.requestWhenInUseAuthorization()
         locationManager.startUpdatingLocation()
         
         setupView()
@@ -56,8 +54,8 @@ class WeatherViewController: UIViewController, UISearchBarDelegate, CLLocationMa
             self.refreshStackView()
         }
     }
-
-    func setupView() {
+    
+    private func setupView() {
         view.backgroundColor = .systemBackground
         
         view.addSubview(citySearchView)
@@ -65,15 +63,15 @@ class WeatherViewController: UIViewController, UISearchBarDelegate, CLLocationMa
         citySearchView.height(56)
         searchController.searchBar.searchTextField.placeholder = NSLocalizedString("Enter a search term", comment: "")
         searchController.searchBar.delegate = self
-
+        
         view.addSubview(scrollView)
         scrollView.edgesToSuperview(excluding: [.top], insets: .uniform(16), usingSafeArea: true)
         scrollView.topToBottom(of: citySearchView)
-
+        
         setupStackView()
     }
     
-    func setupStackView() {
+    private func setupStackView() {
         scrollView.addSubview(stackView)
         stackView.edgesToSuperview()
         
@@ -86,7 +84,7 @@ class WeatherViewController: UIViewController, UISearchBarDelegate, CLLocationMa
         }
     }
     
-    func refreshStackView() {
+    private func refreshStackView() {
         stackView.subviews.forEach { $0.removeFromSuperview() }
         
         if let currentLocWeatherData = viewModel.getCurrentLocationWeatherData() {
@@ -104,31 +102,31 @@ class WeatherViewController: UIViewController, UISearchBarDelegate, CLLocationMa
         
         locationManager.requestWhenInUseAuthorization()
         locationManager.delegate = self
-
+        
         // Auto Completion
         resultsViewController.edgesForExtendedLayout = [.top]
         resultsViewController.extendedLayoutIncludesOpaqueBars = false
         resultsViewController.handleSearchDelegate = self
-
+        
         searchController = UISearchController(searchResultsController: resultsViewController)
-
+        
         // assign the delegate for changes in searchbar text
         searchController.searchBar.delegate = resultsViewController
         searchController.searchBar.searchBarStyle = .minimal
-
+        
         citySearchView.addSubview(searchController.searchBar)
         NSLayoutConstraint.activate([
-          searchController.searchBar.topAnchor.constraint(equalTo: citySearchView.topAnchor),
-          searchController.searchBar.leftAnchor.constraint(equalTo: citySearchView.leftAnchor),
-          searchController.searchBar.rightAnchor.constraint(equalTo: citySearchView.rightAnchor),
-          searchController.searchBar.bottomAnchor.constraint(equalTo: citySearchView.bottomAnchor)
+            searchController.searchBar.topAnchor.constraint(equalTo: citySearchView.topAnchor),
+            searchController.searchBar.leftAnchor.constraint(equalTo: citySearchView.leftAnchor),
+            searchController.searchBar.rightAnchor.constraint(equalTo: citySearchView.rightAnchor),
+            searchController.searchBar.bottomAnchor.constraint(equalTo: citySearchView.bottomAnchor)
         ])
-
+        
         
         // When UISearchController presents the results view, present it in
         // this view controller, not one further up the chain.
         definesPresentationContext = true
-      }
+    }
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
@@ -136,10 +134,10 @@ class WeatherViewController: UIViewController, UISearchBarDelegate, CLLocationMa
         searchController.searchBar.frame = searchController.searchBar.frame
     }
     
-    func validateCity(searchQuery: String) -> Bool {
-        return citiesList.contains(where: { $0.cityName.lowercased() == searchQuery.lowercased() })
-    }
-    
+}
+
+//MARK: - User Location
+extension WeatherViewController: CLLocationManagerDelegate {
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         if manager.authorizationStatus == .authorizedWhenInUse {
             locationManager.startUpdatingLocation()
@@ -158,6 +156,7 @@ class WeatherViewController: UIViewController, UISearchBarDelegate, CLLocationMa
     }
 }
 
+//MARK: - Search Places Selection
 extension WeatherViewController: HandleSearchDelegate {
     func didSelectPlace(placemark: MKPlacemark) {
         searchController.isActive = false

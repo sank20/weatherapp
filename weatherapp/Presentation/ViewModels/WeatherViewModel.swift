@@ -8,11 +8,10 @@
 import Foundation
 import CoreLocation
 
-class WeatherViewModel {
+final class WeatherViewModel {
+    
     let service: WeatherAPIRequest
     
-//    TODO: Define all the values to set directly to UILabels on the screen
-    //TODO: make object private if required
     private var weatherData: [WeatherModel] = []
     private var currentLocationWeatherData: [WeatherModel] = []
 

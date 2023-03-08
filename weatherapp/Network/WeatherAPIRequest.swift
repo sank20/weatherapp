@@ -18,9 +18,9 @@ protocol WeatherRequest {
     func getWeather(coordinate: CLLocationCoordinate2D, unit: Unit, completion: @escaping(Result<WeatherModel, APIError>) -> Void)
 }
 
-// in case of large number of request, abstract out all request protocols so that the service
-// class will have to conform to one protocol typealias
-class WeatherAPIRequest: WeatherRequest {
+// Future improvements: in case of large number of request, we can abstract out all request protocols so that the service
+// class will have to conform to one protocol typealias. Eg. in case there is a new API in the future in addition to WeatherRequest
+final class WeatherAPIRequest: WeatherRequest {
     
     private let apiKey = "d0d6ea9cd1097d3795ca6c8fe0c327cb"
     

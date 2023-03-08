@@ -9,13 +9,13 @@ import UIKit
 import Kingfisher
 import TinyConstraints
 
-class WeatherCardView: UIView {
+final class WeatherCardView: UIView {
 
     private var weatherModel: WeatherModel
 
     lazy var temperatureLabel: UILabel = {
         let label = UILabel()
-        label.font = .systemFont(ofSize: 60, weight: .regular)
+        label.font = .systemFont(ofSize: 52, weight: .regular)
         label.textColor = .black
         label.sizeToFit()
         return label
@@ -72,11 +72,7 @@ class WeatherCardView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func setupView() {
-        //TODO: separate out every component in its own function
-        //        TODO: set font, color etc
-        //        TODO: find out best way to set data to the labels
-        
+    private func setupView() {
         let mainStackView = UIStackView()
         mainStackView.axis = .horizontal
         mainStackView.translatesAutoresizingMaskIntoConstraints = false

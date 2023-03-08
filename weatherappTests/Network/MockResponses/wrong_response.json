@@ -1,8 +1,19 @@
-//
-//  wrong_response.json
-//  weatherappTests
-//
-//  Created by Sanket Pimple on 3/8/23.
-//
-
-import Foundation
+{
+    "coord": {
+        "lon": -121.895,
+        "lat": 37.3394
+    }
+    "weather": [
+    ],
+    "base": "stations",
+    "main": {
+        "temp": 41.14,
+        "feels_like": 35.96,
+        "temp_min": 37.15,
+        "temp_max": 45.12,
+        "pressure": 1020,
+        "humidity": 79
+    },
+    "name": "San Jose",
+    "cod": 200
+}

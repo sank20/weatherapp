@@ -10,14 +10,14 @@ import CoreLocation
 
 final class WeatherViewModel {
     
-    let service: WeatherAPIRequest
+    let service: WeatherRequest
     
     private var weatherData: [WeatherModel] = []
     private var currentLocationWeatherData: [WeatherModel] = []
 
     let userDefaults = UserDefaults.standard
 
-    init(service: WeatherAPIRequest = WeatherAPIRequest()) {
+    init(service: WeatherRequest = WeatherAPIRequest()) {
         self.service = service
     }
     

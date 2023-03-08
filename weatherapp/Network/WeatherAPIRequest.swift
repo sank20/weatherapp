@@ -31,7 +31,7 @@ final class WeatherAPIRequest: WeatherRequest {
                 URLQueryItem(name: "lat", value: coordinate.latitude.description),
                  URLQueryItem(name: "lon", value: coordinate.longitude.description),
                 URLQueryItem(name: "units", value: unit.rawValue),
-                URLQueryItem(name: "appid", value: apiKey) // TODO: store the APIKey in a secure place, like keychain
+                URLQueryItem(name: "appid", value: apiKey)
             ]
             return components.url!
         }

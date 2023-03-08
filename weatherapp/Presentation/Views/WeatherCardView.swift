@@ -48,6 +48,12 @@ class WeatherCardView: UIView {
         return label
     }()
     
+    lazy var weatherDetailLabel: UILabel = {
+        let label = UILabel()
+        label.textColor = .black
+        label.font = .boldSystemFont(ofSize: 20)
+        return label
+    }()
     lazy var weatherImageView = UIImageView()
     lazy var weatherConditionLabel = UILabel()
     
@@ -55,7 +61,7 @@ class WeatherCardView: UIView {
         self.weatherModel = weatherModel
         super.init(frame: .zero)
         height(240)
-        width(320)
+        width(348)
         
         self.backgroundColor = isCurrentLocation ? .systemYellow : .systemGray5
 
@@ -88,20 +94,24 @@ class WeatherCardView: UIView {
         }
         
         if let temperature = weatherModel.mainData.temperature {
-            temperatureLabel.text = String(temperature)
+            temperatureLabel.text = String(temperature) + " F"
         }
         
         cityLabel.text = weatherModel.city
 
         if let feelsLike = weatherModel.mainData.feelsLike {
-            feelsLikeLabel.text = "Feels like: \(feelsLike)"
+            feelsLikeLabel.text = "Feels like: \(feelsLike) F"
         }
         
         if let minTemp = weatherModel.mainData.minTemp, let maxTemp = weatherModel.mainData.maxTemp {
-            highLowTempLabel.text = "H:\(String(maxTemp)) L:\(String(minTemp))"
+            highLowTempLabel.text = "H:\(String(maxTemp))F  L:\(String(minTemp))F"
         }
         
-        let infoStackView = UIStackView(arrangedSubviews: [dateTimeLabel, cityLabel, temperatureLabel, feelsLikeLabel, highLowTempLabel])
+        if !weatherModel.weatherInfo.isEmpty {
+            weatherDetailLabel.text = weatherModel.weatherInfo[0].description.capitalized
+        }
+        
+        let infoStackView = UIStackView(arrangedSubviews: [dateTimeLabel, cityLabel, temperatureLabel, feelsLikeLabel, highLowTempLabel, weatherDetailLabel])
         infoStackView.axis = .vertical
         
         //        ---------------------------image---------

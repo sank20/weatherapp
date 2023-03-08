@@ -22,6 +22,8 @@
 		458E827629B3E893004C8CC4 /* USACitiesModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 458E827529B3E893004C8CC4 /* USACitiesModel.swift */; };
 		458E827929B3E997004C8CC4 /* JSONParsing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 458E827829B3E997004C8CC4 /* JSONParsing.swift */; };
 		45F5D81029B805C3003F253B /* weatherappTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45F5D80F29B805C3003F253B /* weatherappTests.swift */; };
+		45F5D81A29B84ACD003F253B /* TinyConstraints in Frameworks */ = {isa = PBXBuildFile; productRef = 45F5D81929B84ACD003F253B /* TinyConstraints */; };
+		45F5D81C29B85A65003F253B /* LocationSearchResultViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45F5D81B29B85A65003F253B /* LocationSearchResultViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -53,6 +55,7 @@
 		45F5D80D29B805C2003F253B /* weatherappTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = weatherappTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		45F5D80F29B805C3003F253B /* weatherappTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = weatherappTests.swift; sourceTree = "<group>"; };
 		45F5D81629B8361A003F253B /* usa_cities.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = usa_cities.json; sourceTree = "<group>"; };
+		45F5D81B29B85A65003F253B /* LocationSearchResultViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationSearchResultViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -61,6 +64,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				458E827029B316C2004C8CC4 /* Kingfisher in Frameworks */,
+				45F5D81A29B84ACD003F253B /* TinyConstraints in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -138,6 +142,7 @@
 			isa = PBXGroup;
 			children = (
 				458E825129B1D0F6004C8CC4 /* WeatherViewController.swift */,
+				45F5D81B29B85A65003F253B /* LocationSearchResultViewController.swift */,
 				458E826329B1F3EC004C8CC4 /* Views */,
 				458E826229B1F3C5004C8CC4 /* Models */,
 				458E826129B1F3B1004C8CC4 /* ViewModels */,
@@ -196,6 +201,7 @@
 			name = weatherapp;
 			packageProductDependencies = (
 				458E826F29B316C2004C8CC4 /* Kingfisher */,
+				45F5D81929B84ACD003F253B /* TinyConstraints */,
 			);
 			productName = weatherapp;
 			productReference = 458E824A29B1D0F6004C8CC4 /* weatherapp.app */;
@@ -249,6 +255,7 @@
 			mainGroup = 458E824129B1D0F5004C8CC4;
 			packageReferences = (
 				458E826E29B316C2004C8CC4 /* XCRemoteSwiftPackageReference "Kingfisher" */,
+				45F5D81829B84ACD003F253B /* XCRemoteSwiftPackageReference "TinyConstraints" */,
 			);
 			productRefGroup = 458E824B29B1D0F6004C8CC4 /* Products */;
 			projectDirPath = "";
@@ -286,6 +293,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				458E826929B2CF7A004C8CC4 /* WeatherAPIRequest.swift in Sources */,
+				45F5D81C29B85A65003F253B /* LocationSearchResultViewController.swift in Sources */,
 				458E826729B2CDE8004C8CC4 /* NetworkManager.swift in Sources */,
 				458E825229B1D0F6004C8CC4 /* WeatherViewController.swift in Sources */,
 				458E826D29B2D68C004C8CC4 /* WeatherViewModel.swift in Sources */,
@@ -577,6 +585,14 @@
 				minimumVersion = 7.0.0;
 			};
 		};
+		45F5D81829B84ACD003F253B /* XCRemoteSwiftPackageReference "TinyConstraints" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/roberthein/TinyConstraints.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 4.0.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -584,6 +600,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 458E826E29B316C2004C8CC4 /* XCRemoteSwiftPackageReference "Kingfisher" */;
 			productName = Kingfisher;
+		};
+		45F5D81929B84ACD003F253B /* TinyConstraints */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 45F5D81829B84ACD003F253B /* XCRemoteSwiftPackageReference "TinyConstraints" */;
+			productName = TinyConstraints;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

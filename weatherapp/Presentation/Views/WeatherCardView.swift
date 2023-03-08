@@ -7,23 +7,58 @@
 
 import UIKit
 import Kingfisher
-//height: 240
-//width: 320
+import TinyConstraints
+
 class WeatherCardView: UIView {
 
-    private var weatherViewModel: WeatherViewModel
+    private var weatherModel: WeatherModel
+
+    lazy var temperatureLabel: UILabel = {
+        let label = UILabel()
+        label.font = .systemFont(ofSize: 60, weight: .regular)
+        label.textColor = .black
+        label.sizeToFit()
+        return label
+    }()
     
-    lazy var temperatureLabel = UILabel(frame: .zero)
-    lazy var dateTimeLabel = UILabel(frame: .zero)
-    lazy var feelsLikeLabel = UILabel(frame: .zero)
-    lazy var hightLowTempLabel = UILabel(frame: .zero)
+    lazy var cityLabel: UILabel = {
+        let label = UILabel()
+        label.font = .systemFont(ofSize: 32, weight: .regular)
+        label.textColor = .black
+        label.sizeToFit()
+        return label
+    }()
     
-    lazy var weatherIcon = UIImageView()
+
+    lazy var dateTimeLabel: UILabel = {
+        let label = UILabel()
+        label.textColor = .black
+        return label
+    }()
+
+    lazy var feelsLikeLabel: UILabel = {
+        let label = UILabel()
+        label.textColor = .black
+        return label
+    }()
+    
+    lazy var highLowTempLabel: UILabel = {
+        let label = UILabel()
+        label.textColor = .black
+        return label
+    }()
+    
+    lazy var weatherImageView = UIImageView()
     lazy var weatherConditionLabel = UILabel()
-     
-    init(with weatherViewModel: WeatherViewModel) {
-        self.weatherViewModel = weatherViewModel
+    
+    init(with weatherModel: WeatherModel, isCurrentLocation: Bool = false) {
+        self.weatherModel = weatherModel
         super.init(frame: .zero)
+        height(240)
+        width(320)
+        
+        self.backgroundColor = isCurrentLocation ? .systemYellow : .systemGray5
+
         setupView()
     }
     
@@ -32,9 +67,9 @@ class WeatherCardView: UIView {
     }
     
     func setupView() {
-//TODO: separate out every component in its own function
-//        TODO: set font, color etc
-//        TODO: find out best way to set data to the labels
+        //TODO: separate out every component in its own function
+        //        TODO: set font, color etc
+        //        TODO: find out best way to set data to the labels
         
         let mainStackView = UIStackView()
         mainStackView.axis = .horizontal
@@ -44,115 +79,66 @@ class WeatherCardView: UIView {
         mainStackView.spacing = UIStackView.spacingUseSystem
         mainStackView.isLayoutMarginsRelativeArrangement = true
         self.addSubview(mainStackView)
+        mainStackView.edgesToSuperview(insets: .uniform(16))
         
-        self.backgroundColor = .systemGray5
-
+        
         //------Date Time------------
-//        self.addSubview(dateTimeLabel)
-        if let timeStamp = weatherViewModel.weatherObj.timeStamp {
+        if let timeStamp = weatherModel.timeStamp {
             dateTimeLabel.text = getDateTime(timestamp: timeStamp)
         }
-        dateTimeLabel.textColor = .black
-        dateTimeLabel.sizeToFit()
-
-//        self.addSubview(temperatureLabel)
-        if let temperature = weatherViewModel.weatherObj.mainData.temperature {
+        
+        if let temperature = weatherModel.mainData.temperature {
             temperatureLabel.text = String(temperature)
         }
-        temperatureLabel.font = .systemFont(ofSize: 60, weight: .regular)
-        temperatureLabel.textColor = .black
-        temperatureLabel.sizeToFit()
- 
-//        self.addSubview(feelsLikeLabel)
-        feelsLikeLabel.textColor = .black
-        feelsLikeLabel.sizeToFit()
-//        feelsLikeLabel.font = .systemFont(ofSize: 60, weight: .regular)
-        if let feelsLike = weatherViewModel.weatherObj.mainData.feelsLike {
-            feelsLikeLabel.text = String(feelsLike)
-        }
+        
+        cityLabel.text = weatherModel.city
 
-//        self.addSubview(hightLowTempLabel)
-       hightLowTempLabel.textColor = .black
-       hightLowTempLabel.sizeToFit()
-//        hightLowTempLabel.font = .systemFont(ofSize: 60, weight: .regular)
-        
-        if let minTemp = weatherViewModel.weatherObj.mainData.minTemp, let maxTemp = weatherViewModel.weatherObj.mainData.maxTemp {
-            hightLowTempLabel.text = "H:\(String(maxTemp)) L:\(String(minTemp))"
+        if let feelsLike = weatherModel.mainData.feelsLike {
+            feelsLikeLabel.text = "Feels like: \(feelsLike)"
         }
-//        NSLayoutConstraint.activate([
-//            hightLowTempLabel.topAnchor.constraint(equalTo: feelsLikeLabel.bottomAnchor)])
-      
-        let infoStackView = UIStackView(arrangedSubviews: [dateTimeLabel, temperatureLabel, feelsLikeLabel, hightLowTempLabel])
-        infoStackView.axis = .vertical
-        infoStackView.translatesAutoresizingMaskIntoConstraints = false
-//        infoStackView.spacing = UIStackView.spacingUseSystem
-//        infoStackView.isLayoutMarginsRelativeArrangement = true
-//        infoStackView.directionalLayoutMargins = NSDirectionalEdgeInsets(top: 20, leading: 20, bottom: 20, trailing: 20)
-        mainStackView.addArrangedSubview(infoStackView)
         
+        if let minTemp = weatherModel.mainData.minTemp, let maxTemp = weatherModel.mainData.maxTemp {
+            highLowTempLabel.text = "H:\(String(maxTemp)) L:\(String(minTemp))"
+        }
+        
+        let infoStackView = UIStackView(arrangedSubviews: [dateTimeLabel, cityLabel, temperatureLabel, feelsLikeLabel, highLowTempLabel])
+        infoStackView.axis = .vertical
         
         //        ---------------------------image---------
-        if !weatherViewModel.weatherObj.weatherInfo.isEmpty {
-            let url = URL(string: "https://openweathermap.org/img/wn/\(weatherViewModel.weatherObj.weatherInfo[0].icon)@2x.png")
-
-            KF.url(url)
-    //          .placeholder(placeholderImage)
-    //          .setProcessor(processor)
-              .loadDiskFileSynchronously()
-              .fromMemoryCacheOrRefresh()
-              .onSuccess { result in
-                  print("image loaded successfully")
-              }
-              .onFailure { error in
-                  print("image loading error: \(error)")
-              }
-              .set(to: weatherIcon)
+        if !weatherModel.weatherInfo.isEmpty {
+            let url = URL(string: "https://openweathermap.org/img/wn/\(weatherModel.weatherInfo[0].icon)@2x.png")
+            weatherImageView.kf.setImage(with: url, placeholder: nil)
             
             weatherConditionLabel.textColor = .black
             weatherConditionLabel.sizeToFit()
             weatherConditionLabel.textAlignment = .center
-            weatherConditionLabel.text = weatherViewModel.weatherObj.weatherInfo[0].mainWeather
+            weatherConditionLabel.text = weatherModel.weatherInfo[0].mainWeather
         }
         
-        
-       
-        
-        let imageStackView = UIStackView(arrangedSubviews: [weatherIcon, weatherConditionLabel])
+        let imageStackView = UIStackView(arrangedSubviews: [weatherImageView, weatherConditionLabel])
         imageStackView.axis = .vertical
         imageStackView.alignment = .center
-        imageStackView.translatesAutoresizingMaskIntoConstraints = false
-//        imageStackView.spacing = UIStackView.spacingUseSystem
-//        imageStackView.isLayoutMarginsRelativeArrangement = true
-//        imageStackView.topAnchor.constraint(equalTo: self.topAnchor).isActive = true
-//        imageStackView.leadingAnchor.constraint(equalTo: infoStackView.trailingAnchor).isActive = true
-//        imageStackView.directionalLayoutMargins = NSDirectionalEdgeInsets(top: 20, leading: 20, bottom: 20, trailing: 20)
+        
+        mainStackView.addArrangedSubview(infoStackView)
         mainStackView.addArrangedSubview(imageStackView)
-//        
-        setShadowWithCornerRadius(corners: 16)
+        setShadowWithCornerRadius()
     }
     
-    func setShadowWithCornerRadius(corners : CGFloat){
-           self.layer.cornerRadius = corners
-           self.layer.masksToBounds = false
-           self.layer.shadowColor = UIColor.lightGray.cgColor
-            self.layer.shadowOffset = .zero
-           self.layer.shadowOpacity = 0.5
-           self.layer.shadowPath = UIBezierPath(rect: self.bounds).cgPath
-        self.layer.shouldRasterize = true
-        self.layer.shadowRadius = 10
-        self.layer.rasterizationScale = UIScreen.main.scale
+    func setShadowWithCornerRadius() {
+        self.layer.cornerRadius = 16.0
+        self.layer.masksToBounds = false
+        self.layer.shadowColor = UIColor.lightGray.cgColor
+        self.layer.shadowOffset = CGSize(width: 4.0, height: 4.0)
+        self.layer.shadowOpacity = 0.5
+    }
     
-           }
-    
-//    TODO: Move to utilities
-    func getDateTime(timestamp: Double) -> String {
-        
+    private func getDateTime(timestamp: Double) -> String {
         let date = Date(timeIntervalSince1970: timestamp)
-            let dateFormatter = DateFormatter()
-        dateFormatter.timeStyle = DateFormatter.Style.short //Set time style
-        dateFormatter.dateStyle = DateFormatter.Style.medium //Set date style
-            dateFormatter.timeZone = .current
-            let localDate = dateFormatter.string(from: date)
+        let dateFormatter = DateFormatter()
+        dateFormatter.timeStyle = DateFormatter.Style.short // Set time style
+        dateFormatter.dateStyle = DateFormatter.Style.medium // Set date style
+        dateFormatter.timeZone = .current
+        let localDate = dateFormatter.string(from: date)
         return localDate
     }
 }

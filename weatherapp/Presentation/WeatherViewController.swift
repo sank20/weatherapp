@@ -17,140 +17,162 @@ class WeatherViewController: UIViewController, UISearchBarDelegate, CLLocationMa
 
     private var viewModel = WeatherViewModel()
     private var citiesList: [CityItem] = JSONParsing.parseCitiesJSON()
-    private var isWeatherFetched: Bool = false
-    private var locationManager: CLLocationManager? // Ideally all location related code should be moved to a LocationService class. It can be made a singleton if required
-    let userDefaults = UserDefaults.standard
+
+    private var locationManager: CLLocationManager = {
+        let locationManager = CLLocationManager()
+        locationManager.desiredAccuracy = kCLLocationAccuracyBest
+        return locationManager
+    }()
 
     lazy var searchController: UISearchController = {
         let searchController = UISearchController(searchResultsController: nil)
         return searchController
     }()
+    fileprivate var resultsViewController = LocationSearchResultViewController()
+    let citySearchView = UIView()
     
-    lazy var tempLabel: UILabel = {
-        let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        return label
+    private let scrollView = UIScrollView()
+
+    private lazy var stackView = {
+        let stackView = UIStackView()
+        stackView.axis = .vertical
+        stackView.alignment = .center
+        stackView.distribution = .equalSpacing
+        stackView.spacing = 20
+        return stackView
     }()
+    
+    var stackViewConstraint = NSLayoutConstraint()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        locationManager = CLLocationManager()
-        locationManager?.requestWhenInUseAuthorization()
+//        locationManager.requestWhenInUseAuthorization()
+        locationManager.startUpdatingLocation()
         
-//      TODO: get current location and send to fetchWeather
-//        if last location is stored, get that, else, show weather for current location
-        if let lastLocation = userDefaults.string(forKey: "last_location") {
-            fetchWeather(city: lastLocation)
-        } else {
-            // TODO: fetchWeather for current user location
-        }
-//        fetchWeather()
         setupView()
+        setupAppleMap()
+        viewModel.fetchLastLocation { result in
+            self.refreshStackView()
+        }
     }
 
     func setupView() {
         view.backgroundColor = .systemBackground
+        
+        view.addSubview(citySearchView)
+        citySearchView.edgesToSuperview(excluding: [.bottom], insets: UIEdgeInsets(top: 0, left: 8, bottom: 0, right: 8), usingSafeArea: true)
+        citySearchView.height(56)
         searchController.searchBar.searchTextField.placeholder = NSLocalizedString("Enter a search term", comment: "")
         searchController.searchBar.delegate = self
-        navigationItem.searchController = searchController
-        
-//        let scrollView = UIScrollView(frame: .zero)
-//        view.addSubview(scrollView)
-//
-//        scrollView.translatesAutoresizingMaskIntoConstraints = false
-//        NSLayoutConstraint.activate([
-//            scrollView.topAnchor.constraint(equalTo: view.topAnchor),
-//            scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-//            scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-//            scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
-//        ])
-//
-//        scrollView.backgroundColor = .systemGreen
-        
-        let stackView = UIStackView()
-//        scrollView.addSubview(stackView)
-        stackView.axis = .vertical
-//        stackView.distribution = .equalCentering
-        stackView.spacing = 20
-//        stackView.bounds = CGRectInset(stackView.frame, 10.0, 10.0)
 
-        stackView.translatesAutoresizingMaskIntoConstraints = false
-//        NSLayoutConstraint.activate([
-//            stackView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-//            stackView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
-//            stackView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
-//            stackView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
-//        ])
+        view.addSubview(scrollView)
+        scrollView.edgesToSuperview(excluding: [.top], insets: .uniform(16), usingSafeArea: true)
+        scrollView.topToBottom(of: citySearchView)
 
-        let card = WeatherCardView(with: viewModel)
-//        stackView.addArrangedSubview(card)
-        view.addSubview(card)
-
-        NSLayoutConstraint.activate([
-            card.widthAnchor.constraint(equalToConstant: 365),
-            card.heightAnchor.constraint(equalToConstant: 240),
-            card.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-//            card.centerYAnchor.constraint(equalTo: view.centerYAnchor)
-            card.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor)
-        ])
-
-        card.translatesAutoresizingMaskIntoConstraints = false
-        
-//TODO: use uilabels and imageviews for now, rey scrollview and stackview later
-        
+        setupStackView()
     }
     
-    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-        let whitespaceCharacterSet = CharacterSet.whitespaces
-        guard let strippedCityString = searchController.searchBar.text?.trimmingCharacters(in: whitespaceCharacterSet) else { return  }
-        // TODO: Add a check for internet connection here and everywhere else required
-        if(validateCity(searchQuery: strippedCityString)) {
-            print("City found!!")
-            userDefaults.set(strippedCityString, forKey: "last_location")
-            // TODO: add the WeatherModel instance as well in defaults. get that data if user is offline
-            fetchWeather(city: strippedCityString)
-        } else {
-            //TODO: Show error - only usa cities allowed
-            print("Error- wrong city!")
+    func setupStackView() {
+        scrollView.addSubview(stackView)
+        stackView.edgesToSuperview()
+        
+        if UIDevice.current.orientation.isPortrait {
+            stackViewConstraint = stackView.widthToSuperview()
+            stackView.axis = .vertical
+        } else if UIDevice.current.orientation.isLandscape {
+            stackViewConstraint = stackView.heightToSuperview()
+            stackView.axis = .horizontal
         }
+    }
+    
+    func refreshStackView() {
+        stackView.subviews.forEach { $0.removeFromSuperview() }
+        
+        if let currentLocWeatherData = viewModel.getCurrentLocationWeatherData() {
+            let card = WeatherCardView(with: currentLocWeatherData, isCurrentLocation: true)
+            stackView.insertArrangedSubview(card, at: 0)
+        }
+        viewModel.getWeatherData().forEach { weatherModel in
+            let card = WeatherCardView(with: weatherModel)
+            stackView.insertArrangedSubview(card, at: 0)
+        }
+        scrollView.setContentOffset(.zero, animated: true)
+    }
+    
+    private func setupAppleMap() {
+        
+        locationManager.requestWhenInUseAuthorization()
+        locationManager.delegate = self
+
+        // Auto Completion
+        resultsViewController.edgesForExtendedLayout = [.top]
+        resultsViewController.extendedLayoutIncludesOpaqueBars = false
+        resultsViewController.handleSearchDelegate = self
+
+        searchController = UISearchController(searchResultsController: resultsViewController)
+
+        // assign the delegate for changes in searchbar text
+        searchController.searchBar.delegate = resultsViewController
+        searchController.searchBar.searchBarStyle = .minimal
+
+        citySearchView.addSubview(searchController.searchBar)
+        NSLayoutConstraint.activate([
+          searchController.searchBar.topAnchor.constraint(equalTo: citySearchView.topAnchor),
+          searchController.searchBar.leftAnchor.constraint(equalTo: citySearchView.leftAnchor),
+          searchController.searchBar.rightAnchor.constraint(equalTo: citySearchView.rightAnchor),
+          searchController.searchBar.bottomAnchor.constraint(equalTo: citySearchView.bottomAnchor)
+        ])
+
+        
+        // When UISearchController presents the results view, present it in
+        // this view controller, not one further up the chain.
+        definesPresentationContext = true
+      }
+    
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        searchController.searchBar.frame.size.width = citySearchView.frame.size.width
+        searchController.searchBar.frame = searchController.searchBar.frame
     }
     
     func validateCity(searchQuery: String) -> Bool {
         return citiesList.contains(where: { $0.cityName.lowercased() == searchQuery.lowercased() })
     }
     
-    func fetchWeather(city: String, unit: Unit = .imperial) {
-        viewModel.service.getWeather(city: city, unit: unit) { result in
-            DispatchQueue.main.async { [weak self] in
-                switch result {
-                case .success(let weather):
-                    print("Fetched weather")
-                    print(weather)
-                    self?.isWeatherFetched = true
-                    self?.viewModel = WeatherViewModel(weatherObj: weather)
-                    self?.setupView()
-                case .failure(let error):
-                    self?.isWeatherFetched = true
-                    print(error)
-                }
-            }
+    func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+        if manager.authorizationStatus == .authorizedWhenInUse {
+            locationManager.startUpdatingLocation()
+        }
+    }
+
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        guard let latLng: CLLocationCoordinate2D = manager.location?.coordinate else { return }
+        viewModel.fetchCurrentLocWeather(coordinate: latLng) { result in
+            self.refreshStackView()
         }
     }
     
-    func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
-        if manager.authorizationStatus == .authorizedWhenInUse {
-            if CLLocationManager.locationServicesEnabled() {
-                locationManager?.delegate = self
-                locationManager?.desiredAccuracy = kCLLocationAccuracyKilometer
-                locationManager?.startUpdatingLocation()
-            }
-        }
+    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+        locationManager.stopUpdatingLocation()
     }
-    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        guard let latLng: CLLocationCoordinate2D = manager.location?.coordinate else { return }
-        print("locations = \(latLng.latitude) \(latLng.longitude)")
-    }
-
 }
 
+extension WeatherViewController: HandleSearchDelegate {
+    func didSelectPlace(placemark: MKPlacemark) {
+        searchController.isActive = false
+        viewModel.setLastLocation(coordinate: placemark.coordinate)
+        viewModel.fetchWeather(coordinate: placemark.coordinate) { result in
+            self.refreshStackView()
+        }
+    }
+}
+
+// MARK: Handle orientation change
+extension WeatherViewController {
+    override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+        super.viewWillTransition(to: size, with: coordinator)
+        stackView.removeFromSuperview()
+        setupStackView()
+    }
+}
